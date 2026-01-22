@@ -102,10 +102,12 @@ const DisplayController = (function () {
   };
 
   cells.forEach((cell) => {
-    cell.addEventListener("click", () => {
+    cell.addEventListener("click", (event) => {
+      console.log(`Cell clicked: Index ${cell.dataset.index}`);
       if (GameController.isGameOver()) return;
       const index = cell.dataset.index;
       const result = GameController.playRound(index);
+      console.log(`Result after click: ${result}`);
       render(result);
     });
   });
@@ -113,6 +115,7 @@ const DisplayController = (function () {
   restartBtn.addEventListener("click", () => {
     GameController.restartGame();
     render();
+    console.log("Game restarted");
   });
 
   render();
