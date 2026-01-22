@@ -20,7 +20,11 @@ const Gameboard = (function () {
   return { readBoard, placeMark, resetBoard };
 })();
 
-const Gamecontroller = (function () {
+const GameController = (function () {
+  const players = [Player("Player 1", "X"), Player("Player 2", "O")];
+
+  let activePlayer = players[0];
+  let gameOver = false;
   const winCombinations = [
     [0, 1, 2],
     [3, 4, 5],
@@ -32,11 +36,45 @@ const Gamecontroller = (function () {
     [2, 4, 6],
   ];
 
-  const playRound = function () {};
+  const getActivePlayer = function () {
+    return activePlayer;
+  };
 
-  const getActivePlayer = function () {};
+  const switchPlayer = function () {
+    activePlayer = activePlayer === players[0] ? players[1] : players[0];
+  };
 
-  const restartGame = function () {};
+  const checkWin = function () {
+    const board = Gameboard.readBoard();
+    return winCombinations.some((combination) =>
+      combination.every((index) => board[index] === activePlayer.mark),
+    );
+  };
+
+  const checkTie = function () {
+    return Gameboard.readBoard().every((cell) => cell !== "");
+  };
+
+  const playRound = function (index) {
+    if (gameOver) return;
+
+    if (!Gameboard.placeMark(index, activePlayer.mark)) return;
+
+    if (checkWin() || checkTie()) {
+      gameOver = true;
+      return;
+    }
+
+    switchPlayer();
+  };
+
+  const restartGame = function () {
+    activePlayer = players[0];
+    Gameboard.resetBoard();
+    gameOver = false;
+  };
 
   return { playRound, getActivePlayer, restartGame };
 })();
+
+const DisplayController = ()();
