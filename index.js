@@ -1,26 +1,18 @@
 /* --- Player Factory --- */
-const Player = (name, mark) => {
-  return { name, mark };
-};
+const Player = (name, mark) => ({ name, mark });
 
 /* --- Gameboard Module --- */
 const Gameboard = (function () {
   const board = ["", "", "", "", "", "", "", "", ""];
-
   const readBoard = () => board;
-
-  const placeMark = function (index, mark) {
+  const placeMark = (index, mark) => {
     if (board[index] !== "") return false;
     board[index] = mark;
     return true;
   };
-
-  const resetBoard = function () {
-    for (let i = 0; i < board.length; i++) {
-      board[i] = "";
-    }
+  const resetBoard = () => {
+    for (let i = 0; i < board.length; i++) board[i] = "";
   };
-
   return { readBoard, placeMark, resetBoard };
 })();
 
@@ -33,12 +25,12 @@ const GameController = (function () {
   const winCombinations = [
     [0, 1, 2],
     [3, 4, 5],
-    [6, 7, 8], // Rows
+    [6, 7, 8],
     [0, 3, 6],
     [1, 4, 7],
-    [2, 5, 8], // Cols
+    [2, 5, 8],
     [0, 4, 8],
-    [2, 4, 6], // Diagonals
+    [2, 4, 6],
   ];
 
   const getActivePlayer = () => activePlayer;
@@ -50,17 +42,16 @@ const GameController = (function () {
 
   const checkWin = () => {
     const board = Gameboard.readBoard();
-    return winCombinations.some((combination) =>
-      combination.every((index) => board[index] === activePlayer.mark),
+    return winCombinations.some((combo) =>
+      combo.every((i) => board[i] === activePlayer.mark),
     );
   };
 
   const checkTie = () => Gameboard.readBoard().every((cell) => cell !== "");
 
-  const playRound = function (index) {
+  const playRound = (index) => {
     if (gameOver) return;
 
-    // If the mark was placed successfully, check for game end
     if (Gameboard.placeMark(index, activePlayer.mark)) {
       if (checkWin()) {
         gameOver = true;
@@ -75,7 +66,7 @@ const GameController = (function () {
     }
   };
 
-  const restartGame = function () {
+  const restartGame = () => {
     activePlayer = players[0];
     Gameboard.resetBoard();
     gameOver = false;
@@ -86,31 +77,21 @@ const GameController = (function () {
 
 /* --- Display Controller Module --- */
 const DisplayController = (function () {
-  // 1. Cache DOM Elements
   const boardDiv = document.getElementById("gameboard");
   const statusText = document.getElementById("status-text");
   const restartBtn = document.getElementById("restart-btn");
+  const cells = document.querySelectorAll(".cell");
 
-  // 2. The Render Function: Syncs UI with the Gameboard array
   const render = (result) => {
     const board = Gameboard.readBoard();
-    boardDiv.innerHTML = ""; // Clear board before redraw
-
-    board.forEach((mark, index) => {
-      const cell = document.createElement("div");
-      cell.classList.add("cell");
-      cell.dataset.index = index;
-      cell.textContent = mark;
-      boardDiv.appendChild(cell);
+    cells.forEach((cell, index) => {
+      cell.textContent = board[index];
     });
-
     updateStatus(result);
   };
 
-  // 3. Update the Status Text based on the game state
   const updateStatus = (result) => {
     const currentPlayer = GameController.getActivePlayer();
-
     if (result === "win") {
       statusText.textContent = `${currentPlayer.name} Wins!`;
     } else if (result === "tie") {
@@ -120,15 +101,13 @@ const DisplayController = (function () {
     }
   };
 
-  // 4. Bind Events
-  boardDiv.addEventListener("click", (e) => {
-    // Only proceed if a cell was clicked and the game isn't over
-    const index = e.target.dataset.index;
-    if (index === undefined || GameController.isGameOver()) return;
-
-    // Pass index to logic, get result back, and redraw
-    const result = GameController.playRound(index);
-    render(result);
+  cells.forEach((cell) => {
+    cell.addEventListener("click", () => {
+      if (GameController.isGameOver()) return;
+      const index = cell.dataset.index;
+      const result = GameController.playRound(index);
+      render(result);
+    });
   });
 
   restartBtn.addEventListener("click", () => {
@@ -136,8 +115,5 @@ const DisplayController = (function () {
     render();
   });
 
-  // Initial call to show the board on page load
   render();
-
-  return { render };
 })();
